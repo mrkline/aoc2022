@@ -1,13 +1,14 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 
 #[aoc_generator(day1)]
-fn clumper(input: &str) -> Vec<i64> {
+fn clumper(input: &str) -> Vec<i32> {
     let mut parsed = Vec::new();
-    let mut acc: i64 = 0;
+    let mut acc: i32 = 0;
 
     for line in input.lines() {
         if !line.is_empty() {
-            acc += line.parse::<i64>().expect("not an int");
+            let i = line.parse::<i32>().expect("not an int");
+            acc = acc.checked_add(i).expect("overflow");
         } else {
             parsed.push(acc);
             acc = 0;
@@ -19,13 +20,13 @@ fn clumper(input: &str) -> Vec<i64> {
 }
 
 #[aoc(day1, part1)]
-fn part1(input: &[i64]) -> i64 {
+fn part1(input: &[i32]) -> i32 {
     *input.iter().max().expect("empty input")
 }
 
 #[aoc(day1, part2)]
-fn part2(input: &[i64]) -> i64 {
-    let mut maxes = [0i64; 3];
+fn part2(input: &[i32]) -> i32 {
+    let mut maxes = [0i32; 3];
 
     for c in input {
         if *c > maxes[0] {
