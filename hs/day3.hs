@@ -1,6 +1,7 @@
 import Control.Exception(assert)
 import Data.ByteString as BS(ByteString, length, readFile, splitAt, unpack)
 import qualified Data.ByteString.Char8 as C
+import Data.List(foldl1')
 import Data.List.Split
 import Data.Word
 import Data.Set
@@ -43,13 +44,8 @@ part2 input = sum $ groupScore <$> chunksOf 3 (C.lines input)
 groupScore :: [ByteString] -> Word64
 groupScore group = prioOf . onlyElement $ shared
     where
-        -- Start with a set from the first pack in the group.
-        first = toSet . head $ group
-        -- Recursively intersect against each subsequent backpack.
-        common :: Set Word8 -> [ByteString] -> Set Word8
-        common s (h:t) = common (intersection s $ toSet h) t
-        common s [] = s
-        shared = common first $ tail group
+        sets = toSet <$> group
+        shared = foldl1' intersection sets
 
 main :: IO ()
 main = do

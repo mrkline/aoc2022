@@ -1,5 +1,6 @@
 use aoc_runner_derive::aoc;
 
+use itertools::Itertools;
 use rustc_hash::FxHashSet;
 
 fn calc_prio(item: u8) -> i64 {
@@ -41,22 +42,14 @@ fn part2(input: &str) -> i64 {
     for group in input
         .lines()
         .map(|l| to_set(l.as_bytes()))
-        .collect::<Vec<_>>()
-        .chunks_exact_mut(3)
+        .chunks(3)
+        .into_iter()
     {
-        let mut group = group.iter_mut();
-
-        // Grab the first set.
-        let mut set = FxHashSet::default();
-        std::mem::swap(&mut set, group.next().unwrap());
-
-        // Intersect it with the other two.
-        for g in group {
-            set = set.intersection(g).cloned().collect();
-        }
-
-        assert_eq!(set.len(), 1);
-        prios += calc_prio(*set.iter().next().unwrap());
+        let shared = group
+            .reduce(|a, b| a.intersection(&b).copied().collect())
+            .expect("empty group");
+        assert_eq!(shared.len(), 1);
+        prios += calc_prio(*shared.iter().next().unwrap());
     }
     prios
 }
