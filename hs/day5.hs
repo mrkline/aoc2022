@@ -4,6 +4,7 @@ import Data.List
 import Data.Text(Text)
 import qualified Data.Text as T
 import Data.Text.Encoding(decodeUtf8)
+import Data.Vector((!), Vector, fromList)
 import Text.Regex.TDFA((=~))
 
 data Step = Step {
@@ -13,8 +14,8 @@ data Step = Step {
 } deriving Show
 
 data Input = Input {
-    stacks :: [[Char]],
-    directions:: [Step]
+    stacks :: Vector [Char],
+    directions:: Vector Step
 } deriving Show
 
 parseInput :: Text -> Input
@@ -24,8 +25,8 @@ parseInput i = Input s d
         s = parseStacks . head $ halves
         d = parseDirections . last $ halves
 
-parseStacks :: Text -> [[Char]]
-parseStacks st = onStacks
+parseStacks :: Text -> Vector [Char]
+parseStacks st = fromList $ onStacks
     where
         -- Grab the last line.
         (lastLine:revLines) = reverse . T.lines $ st
@@ -42,8 +43,8 @@ parseStacks st = onStacks
         crateChar :: Text -> Int -> Char
         crateChar l i = T.unpack l !! (i * 4 + 1)
 
-parseDirections :: Text -> [Step]
-parseDirections d = parseDirection <$> T.lines d
+parseDirections :: Text -> Vector Step
+parseDirections d = fromList $ parseDirection <$> T.lines d
     where
         parseDirection = dirFromList . nums . T.unpack
         -- We'd better have three matches in the regex below.
@@ -61,13 +62,13 @@ part1 i = foldl' (\acc s -> acc ++ [head s]) [] restacked
     where
         restacked = foldl' applyStep (stacks i) (directions i)
         -- Apply moveOneCrate `count stp` times
-        applyStep :: [[Char]] -> Step -> [[Char]]
+        applyStep :: Vector [Char] -> Step -> Vector [Char]
         applyStep onStacks stp = iterate (moveOneCrate stp) onStacks !! count stp
         -- Pop the top off of the `from stp`-th stack and push it to the `to stp`-th
         -- Lenses ftw? https://stackoverflow.com/a/15531874/713961
-        moveOneCrate :: Step -> [[Char]] -> [[Char]]
+        moveOneCrate :: Step -> Vector [Char] -> Vector [Char]
         moveOneCrate stp stk = (stk & element (from stp) %~ tail) -- pop
-            & element (to stp) %~ (head (stk !! from stp):) -- push
+            & element (to stp) %~ (head (stk ! from stp):) -- push
 
 
 part2 :: Input -> String
@@ -75,11 +76,11 @@ part2 i = foldl' (\acc s -> acc ++ [head s]) [] restacked
     where
         restacked = foldl' applyStep (stacks i) (directions i)
         -- Pop n crates off the top of one stack and push them on the other.
-        applyStep :: [[Char]] -> Step -> [[Char]]
+        applyStep :: Vector [Char] -> Step -> Vector [Char]
         applyStep stk stp = (stk & element (from stp) %~ drop (count stp)) -- pop
             & element (to stp) %~ (movingCrates stk stp ++ ) -- push
-        movingCrates :: [[Char]] -> Step -> [Char]
-        movingCrates stk stp = take (count stp) (stk !! from stp)
+        movingCrates :: Vector [Char] -> Step -> [Char]
+        movingCrates stk stp = take (count stp) (stk ! from stp)
 
 main :: IO ()
 main = do
