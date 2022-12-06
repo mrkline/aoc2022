@@ -26,7 +26,7 @@ parseInput i = Input s d
         d = parseDirections . last $ halves
 
 parseStacks :: Text -> Vector [Char]
-parseStacks st = fromList $ onStacks
+parseStacks st = fromList onStacks
     where
         -- Grab the last line.
         (lastLine:revLines) = reverse . T.lines $ st
@@ -41,7 +41,7 @@ parseStacks st = fromList $ onStacks
         -- [a] [b] [c] [d]
         -- so char i*4 + 1 is the contents of the crate.
         crateChar :: Text -> Int -> Char
-        crateChar l i = T.unpack l !! (i * 4 + 1)
+        crateChar l i = T.index l (i * 4 + 1)
 
 parseDirections :: Text -> Vector Step
 parseDirections d = fromList $ parseDirection <$> T.lines d
