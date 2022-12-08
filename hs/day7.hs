@@ -4,6 +4,7 @@ import Control.Lens
 import Control.Exception(assert)
 import qualified Data.ByteString as BS(readFile)
 import Data.Foldable
+import Data.Function
 import qualified Data.Map.Strict as M
 import Data.Maybe
 import Data.Text(Text)
@@ -21,12 +22,13 @@ instance Functor Node where
     fmap f (Dir d) = Dir $ (fmap . fmap) f d
 
 type SizedDir = Directory Int64
+type SizedNode = Node Int64
 
-parseDirs :: Text -> SizedDir
+parseDirs :: Text -> SizedNode
 parseDirs input = root . T.lines $ input
 
-root :: [Text] -> SizedDir
-root (rl:rest) = assert (rl == T.pack "$ cd /") check
+root :: [Text] -> SizedNode
+root (rl:rest) = assert (rl == T.pack "$ cd /") $ Dir check
     where
         (parsed, remains) = appendToDir M.empty rest
         check = assert (remains == []) parsed
@@ -59,5 +61,13 @@ appendLs d (x:xs)
 
 main :: IO ()
 main = do
-    input <- parseDirs . decodeUtf8 <$> BS.readFile "/tmp/test.txt"
-    print $ (const 42) <$> input
+    print $ (+2) <$> (Dir $ M.fromList [
+        (T.pack "a", File 42),
+        (T.pack "b", File 22),
+        (T.pack "c", Dir $ M.fromList [
+            (T.pack "d", File 11),
+            (T.pack "e", Dir $ M.fromList [(T.pack "f", File 99)])
+            ])
+        ])
+    input <- parseDirs . decodeUtf8 <$> BS.readFile "test.txt"
+    print $ (+2) <$> input
