@@ -57,28 +57,7 @@ appendLs d (x:xs)
             name = toks !! 1
             s = read . T.unpack $ toks !! 0
 
-size :: Node Int64 -> Int64
-size n = sum n
-
-dirs :: SizedDir -> [SizedDir]
-dirs d = d : (catMaybes . toList $ justDirs <$> d)
-    where
-        justDirs (Dir d') = Just d'
-        justDirs (File _) = Nothing
-
-part1 :: SizedDir -> Int64
-part1 d = sum $ under100k <$> dirs d
-    where
-        under100k :: SizedDir -> Int64
-        under100k c = let s = size (Dir c) in
-            if s <= 100000 then s else 0
-
-part2 :: SizedDir -> Int64
-part2 _ = 42
-
 main :: IO ()
 main = do
     input <- parseDirs . decodeUtf8 <$> BS.readFile "/tmp/test.txt"
-    print $ size . Dir <$> dirs input
-    print $ part1 input
-    print $ part2 input
+    print $ (const 42) <$> input
