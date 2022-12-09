@@ -68,13 +68,12 @@ move dir (Coord x y)
     | otherwise = error $ "Unknown direction " ++ [dir]
 
 moveTail :: Segment -> Coord
-moveTail Segment{..} = newTail
-    where
-        dx = cx segHead - cx segTail
-        dy = cy segHead - cy segTail
-        manhattan = max (abs dx) (abs dy)
-        newTail = if manhattan <= 1 then segTail else
-            Coord (cx segTail + signum dx) (cy segTail + signum dy)
+moveTail Segment{..} = newTail where
+    dx = cx segHead - cx segTail
+    dy = cy segHead - cy segTail
+    manhattan = max (abs dx) (abs dy)
+    newTail = if manhattan <= 1 then segTail else
+        Coord (cx segTail + signum dx) (cy segTail + signum dy)
 
 
 runInstruction :: TimeStep -> Instruction -> TimeStep
@@ -99,7 +98,7 @@ printTrail hist = do
         printLn y = do
             traverse_ (\x -> putChar $ if member (Coord x y) hist then '#' else '.') [minX..maxX]
             putChar '\n'
-    traverse_ printLn $ enumFromThenTo maxY (maxY - 1) minY
+    traverse_ printLn [maxY, (maxY - 1)..minY]
 
 main :: IO ()
 main = do
