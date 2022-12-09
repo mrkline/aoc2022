@@ -68,29 +68,14 @@ move dir (Coord x y)
     | otherwise = error $ "Unknown direction " ++ [dir]
 
 moveTail :: Segment -> Coord
-moveTail = pullStraight . pullDiagonally
+moveTail Segment{..} = newTail
+    where
+        dx = cx segHead - cx segTail
+        dy = cy segHead - cy segTail
+        manhattan = max (abs dx) (abs dy)
+        newTail = if manhattan <= 1 then segTail else
+            Coord (cx segTail + signum dx) (cy segTail + signum dy)
 
-pullStraight :: Segment -> Coord
-pullStraight Segment{..}
-    | abs dx > 1 = Coord (cx segHead - signum dx) (cy segTail)
-    | abs dy > 1 = Coord (cx segTail) (cy segHead - signum dy)
-    | otherwise = segTail
-        where
-            dx = cx segHead - cx segTail
-            dy = cy segHead - cy segTail
-
-pullDiagonally :: Segment -> Segment
-pullDiagonally Segment{..} = Segment segHead (pullDiagonally' Segment{..})
-
--- If the tail is at a diagonal and > 1 Manhattan distance away,
--- it snaps in line with the head before being pulled taut.
-pullDiagonally' :: Segment -> Coord
-pullDiagonally' Segment{..}
-    -- if |dx| > 1, snap the tail inline with head's y
-    | abs (cx segHead - cx segTail) > 1 = Coord (cx segTail) (cy segHead)
-    -- if |dy| > 1, snap the tail inline with head's x
-    | abs (cy segHead - cy segTail) > 1 = Coord (cx segHead) (cy segTail)
-    | otherwise = segTail
 
 runInstruction :: TimeStep -> Instruction -> TimeStep
 runInstruction ts Instruction{..} = iterate (update direction) ts !! steps
